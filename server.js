@@ -20,9 +20,14 @@ db.connect((err) => {
   console.log('Connected to the database');
 });
 
-// Endpoint to fetch forum categories
 app.get('/forum-categories', (req, res) => {
-  const sql = 'SELECT * FROM announcements'; // Adjust SQL based on your table structure
+  const sql = `
+    SELECT 
+      *,
+      CreatedDate,
+      NOW(),
+    FROM posts`;
+
   db.query(sql, (err, result) => {
     if (err) throw err;
     res.json(result);
