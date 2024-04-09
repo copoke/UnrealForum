@@ -22,15 +22,48 @@ db.connect((err) => {
 
 app.get('/forum-categories', (req, res) => {
   const sql = `
-    SELECT 
-      *,
-      CreatedDate,
-      NOW(),
-    FROM posts`;
+  SELECT 
+    posts.postId,
+    posts.*,
+    users.UserId AS CreatorUserId,
+    users.Username AS CreatorUsername,
+    threads.ThreadId AS RecentThreadId,
+    threads.CreatorId AS RecentThreadCreatorId,
+    recentThreadCreator.Username AS RecentThreadCreatorUsername,
+    posts.CreatedDate AS PostCreatedDate, -- Alias the CreatedDate column from the posts table
+    NOW() AS CurrentTime,
+    COUNT(DISTINCT threads.ThreadId) AS ThreadCount  -- Count of threads associated with each post
+FROM 
+    posts
+JOIN 
+    users ON posts.CreatorId = users.UserId
+LEFT JOIN (
+    SELECT
+        ThreadId,
+        CreatorId,
+        MAX(CreatedDate) AS MaxCreatedDate
+    FROM
+        threads
+    GROUP BY
+        ThreadId
+) AS recentThread ON posts.postId = recentThread.ThreadId
+LEFT JOIN
+    threads ON recentThread.ThreadId = threads.ThreadId
+LEFT JOIN
+    users AS recentThreadCreator ON recentThread.CreatorId = recentThreadCreator.UserId
+GROUP BY
+    posts.postId, users.UserId, users.Username, threads.ThreadId, threads.CreatorId, recentThreadCreator.Username, posts.CreatedDate;
+  `;
 
   db.query(sql, (err, result) => {
-    if (err) throw err;
-    res.json(result);
+      if (err) {
+          console.error('Error executing SQL query:', err);
+          res.status(500).json({ error: 'Internal server error' });
+          return;
+      }
+
+      // Send the result (which includes usernames) to the client
+      res.json(result);
   });
 });
 

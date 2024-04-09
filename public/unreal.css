@@ -48,6 +48,7 @@ body {
     background-color: #2e2e2e;
     padding: 15px;
     width:80%;
+    cursor:pointer;
     border-radius: 20px;
     margin-bottom: 5px;
     border-left: 4px solid #3a9d5d;
