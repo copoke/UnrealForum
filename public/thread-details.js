@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(threads => {
                 const threadsContainer = document.querySelector('.threads');
                 threadsContainer.innerHTML = ''; // Clear any existing content
+                console.log(threads)
 
                 threads.forEach(thread => {
                     const threadElement = document.createElement('div');

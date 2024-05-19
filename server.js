@@ -149,10 +149,18 @@ app.get('/comments/:threadId', (req, res) => {
 
 app.get('/forum-categories', (req, res) => {
   const sql = `
-    SELECT 
-      *
+  SELECT 
+      p.postId,
+      p.Title,
+      p.Replies,
+      p.CreatedDate,
+      p.CreatorId,
+      u.Username AS CreatorUsername,
+      (SELECT COUNT(*) FROM threads WHERE categoryId = p.postId) AS ThreadCount
     FROM
-    posts`;
+      posts p
+    LEFT JOIN
+      users u ON p.CreatorID = u.UserID`;
   db.query(sql, (err, result) => {
     if (err) {
       res.status(500).send('Error fetching categories');
@@ -164,6 +172,7 @@ app.get('/forum-categories', (req, res) => {
 
 app.get('/threads/:categoryId', (req, res) => {
   const categoryId = req.params.categoryId;
+  console.log(categoryId)
   const sql = `
   SELECT 
   threads.ThreadId,
@@ -171,17 +180,14 @@ app.get('/threads/:categoryId', (req, res) => {
   threads.Content AS ThreadContent,
   threads.CreatedDate AS ThreadCreatedDate,
   threads.Likes AS ThreadLikes,
-  threads.Views as ThreadViews,
-  users.Username AS ThreadCreatorUsername,
+  threads.Views AS ThreadViews,
   (SELECT COUNT(*)
-  FROM comments
-  WHERE comments.ThreadId = threads.ThreadId) AS CommentCount
+   FROM comments
+   WHERE comments.ThreadId = threads.ThreadId) AS CommentCount
 FROM 
   threads
-JOIN 
-  users ON threads.CreatorId = users.UserId
 WHERE 
-  threads.CategoryId = ?;
+  threads.CategoryId = ?;  -- Replace 0 with the desired CategoryId;
   `;
 
   db.query(sql, [categoryId], (err, results) => {
