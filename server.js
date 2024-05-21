@@ -220,6 +220,42 @@ app.get('/thread-details', (req, res) => {
   res.sendFile(__dirname + '/public/thread-details.html');
 });
 
+// Endpoint to create a new post
+app.post('/post', isAuthenticated, (req, res) => {
+  const { title, content } = req.body;
+  const creatorId = req.session.userId;
+
+  const sql = 'INSERT INTO posts (Title, Content, CreatorId) VALUES (?, ?, ?)';
+
+  db.query(sql, [title, content, creatorId], (err, result) => {
+    if (err) {
+      console.error('Error executing SQL query:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+
+    res.json({ success: true, postId: result.insertId });
+  });
+});
+
+// Endpoint to create a new thread
+app.post('/thread', isAuthenticated, (req, res) => {
+  const { title, content, categoryId } = req.body;
+  const creatorId = req.session.userId;
+
+  const sql = 'INSERT INTO threads (Title, Content, CreatorId, CategoryId) VALUES (?, ?, ?, ?)';
+
+  db.query(sql, [title, content, creatorId, categoryId], (err, result) => {
+    if (err) {
+      console.error('Error executing SQL query:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+
+    res.json({ success: true, threadId: result.insertId });
+  });
+});
+
 // Serve your HTML file for the root route
 app.get('/', isAuthenticated, (req, res) => {
   res.sendFile(__dirname + '/public/unreal.html');
